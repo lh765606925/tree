@@ -1,0 +1,577 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <title>树状图</title>  
+    <script src="d3.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+</head>  
+<style>  
+	body{background:#999}
+      .node circle {
+    cursor: pointer;
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 2px;
+  }
+
+  .node text {
+    font-size: 12px;
+    cursor:default
+  }
+
+  .link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px;
+  } 
+  .receiver{
+  position:absolute;
+  background:#fff;
+  outline:0;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  padding:3px;
+  margin-left:-3px;
+  margin-top:-5px;
+  max-width:300px;
+  width:auto;
+  font-size:12px;
+  line-height:1.2em;
+  min-height:0.6em;
+  box-sizing:border-box;overflow:hidden;
+  word-break:break-all;word-wrap:break-word;pointer-events:none;border:none;
+  opacity: 0;z-index: -1000;}
+  .input{pointer-events:all;opacity:1;z-index:999;outline:0;background:#fff;} /**/
+  .right-menu{position:absolute;display:none;}
+  .right-menu .ring{position:relative;width:120px;height:120px;}
+  .right-menu .ring .ring-item{
+  position:absolute;
+  background:#fff;
+  width:40px;
+  height:40px;
+  text-align:center;
+  line-height:40px;
+  border-radius:50%;
+  box-shadow: 0 0 30px rgba(0,0,0,.3);
+  cursor:pointer;
+  font-size:12px;
+  color:#333;
+  }
+  .item-1{left:0;top:40px;}
+  .item-2{left:40px;top:0;}
+  .item-3{left:80px;top:40px;}
+  .item-4{left:40px;top:80px;}
+  .right-menu .ring .ring-item:hover{background: #e87372;color:#fff;}
+  .axis line {
+    fill: none;
+    stroke: #ddd;
+    shape-rendering: crispEdges;
+    vector-effect: non-scaling-stroke;
+  }
+</style>  
+<body>  
+	<div contenteditable="true" tabindex="-1" class="receiver" id="receiver"></div>
+	<div class="right-menu" id="right-menu">
+		<div class="ring">
+			<div class="ring-item item-1" onclick="addNode()">添加</div>
+			<div class="ring-item item-2" onclick="delNode()">删除</div>
+			<div class="ring-item item-3">得分卡</div>
+			<div class="ring-item item-4">待定</div>
+		</div>
+	</div>
+</body>  
+</html>  
+<script type="text/javascript">
+var root ={
+"id": 1,
+"name":"如何学习D3",
+"element":1, 
+"children":
+[
+  { 
+    "id": 2,    
+    "name":"预备知识" ,
+    "element":2, 
+      "children":
+      [
+          {"id": 3,"element":3, "name":"HTML & CSS" },
+          {"id": 4,"element":3, "name":"JavaScript" },
+          {"id": 5,"element":3, "name":"DOM" },
+          {"id": 6,"element":3, "name":"SVG" }
+      ] 
+    },
+    
+  { 
+    "id": 7,
+    "name":"安装" , 
+    "element":2, 
+    "children":
+    [
+      {
+        "id": 8,
+        "element":3, 
+        "name":"记事本软件",
+        "children":
+        [
+          {"id": 9, "element":4,"name":"Notepad++","children":
+            [
+              {"id": 40, "element":5,"name":"webstorm"}
+            ]
+          },
+          {"id": 10, "element":4,"name":"EditPlus"},
+          {"id": 11,"element":4,"name":"Sublime Text"}
+        ]
+      },
+      {
+        "id": 12,
+        "element":3, 
+        "name":"服务器软件",
+        "children":
+        [
+          {"id": 13,"element":4,"name":"Apache Http Server"},
+          {"id": 14,"element":4,"name":"Tomcat"}
+        ]
+      },
+      {"id": 15,"element":3,"name":"下载D3.js"}
+    ] 
+  },
+  
+  { 
+    "id": 16,
+    "name":"入门",
+    "element":2,
+    "children":
+    [
+      {
+        "id": 17,
+        "name":"选择集",
+        "element":3,
+        "children":
+        [
+          {"id": 18,"element":4,"name":"select"},
+          {"id": 19,"element":4,"name":"selectAll"}
+        ]
+      },
+      {
+        "id": 20,
+        "name":"绑定数据",
+        "element":3,
+        "children":
+        [
+          {"id": 21,"element":4,"name":"datum"},
+          {"id": 22,"element":4,"name":"data"}
+        ]
+      },
+      {"id": 23,"element":3,"name":"添加删除元素"},
+      {
+        "id": 24,
+        "name":"简单图形",
+        "element":3,
+        "children":
+        [
+          {"id": 25,"element":4,"name":"柱形图"},
+          {"id": 26,"element":4,"name":"折线图"},
+          {"id": 27,"element":4,"name":"散点图"}
+        ]
+      },
+      {"id": 28,"element":3,"name":"比例尺"},
+      {"id": 29,"element":3,"name":"生成器"},
+      {"id": 30,"element":3,"name":"过渡"}
+    ] 
+  },
+  
+  { 
+    "id": 31,
+    "name":"进阶" , 
+    "element":2,
+    "children":
+    [
+      {
+        "id": 32,
+        "name":"布局的应用",
+        "element":3,
+        "children":
+        [
+          {"id": 33,"element":4,"name":"饼状图"},
+          {"id": 34,"element":4,"name":"树状图"},
+          {"id": 35,"element":4,"name":"矩阵树图"}
+        ]
+      },
+      {"id": 36,"element":3,"name":"地图"}
+    ]
+  }
+]
+};
+var width = 1200;
+var height =800;
+var currentNode = null;//定义当前节点对象
+var id= 1000; //存储新增加的元素模拟Id
+var oldVal = '';//存储旧值
+window.onload=function (){
+	document.getElementById("right-menu").oncontextmenu=document.getElementById("svgBox").oncontextmenu = function(event) { //在svg内容让鼠标右键禁用
+		 event.cancelBubble = true 
+     event.returnvalue = false;
+     return false;
+	}
+}
+//边界空白
+var padding = {left: 80, right:50, top: 20, bottom: 20 };
+//定义zoom缩放的
+var zoom = d3.behavior.zoom()
+              .scaleExtent([1,10])
+              .on("zoom",zoomed);
+var drag = d3.behavior.drag()
+              .origin(function(d) {return d;})
+              .on("dragstart",dragstarted)
+              .on("drag",dragged)
+              .on("dragend",dragended)              
+//绘制画布
+var svg = d3.select("body")
+           .append("svg")
+	         .attr("width", width)
+	         .attr("height", height)
+	         .attr("id","svgBox")
+           .append("g")
+           .attr("transform","translate("+ padding.left + "," + padding.top + ")")
+           .call(zoom);
+var rect = svg.append("rect")
+            .attr("width",width) 
+             .attr("height",height)
+             .style("fill","none")
+             .style("pointer-events","all");
+var container = svg.append("g")
+    container.append("g")
+              .attr("class","x axis")
+              .selectAll("line")
+              .data(d3.range(0, width, 10))
+              .enter().append("line")
+              .attr("x1",function(d) {return d;})
+              .attr("y1",0)
+              .attr("x2",function(d) {return d;})
+              .attr("y2",height); 
+    container.append("g")
+              .attr("class","y axis")
+              .selectAll("line")
+              .data(d3.range(0, height, 10))
+              .enter().append("line")
+              .attr("x1",0)
+              .attr("y1",function(d) {return d;})
+              .attr("x2",width)
+              .attr("y2",function(d) {return d;})                                
+function zoomed() {
+  container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+function dragstarted(d) {
+  d3.event.sourceEvent.stopPropagation();
+  d3.select(this).classed("dragging", true);
+}
+
+function dragged(d) {
+  d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+}
+
+function dragended(d) {
+  d3.select(this).classed("dragging", false);
+}
+//定义树状图布局
+var tree = d3.layout.tree()
+            .size([height, width])
+            .separation(function(a,b) {return a.parent == b.parent ? 1 : 2;});//设置节点之间的距离
+//定义连接线过滤器
+var diagonal = d3.svg.diagonal()
+    .projection(function(d) {return [d.y, d.x]; });
+  //给第一个节点添加初始坐标x0和x1
+  root.x0 = height / 2;
+  root.y0 = 0;
+  //以第一个节点为起始节点，重绘
+  //var rootData = openNode(tree.nodes(root));
+  //页面加载的时候调用这个，处理一下数据，让它开始只显示三层
+  openNode(tree.nodes(root));
+
+  //重绘函数
+  function redraw(source){
+    /*
+    （1） 计算节点和连线的位置
+    */
+    //应用布局，计算节点和连线
+    var nodes = tree.nodes(root); //这里必须是root，不能为source,否则会出现不能收回
+    var links = tree.links(nodes);
+    //重新计算节点的y坐标
+    nodes.forEach(function(d) {d.y = d.depth * 100;});  //可以得出2个坐标之间的距离
+    /*
+    （2） 节点的处理
+    */
+    //获取节点的update部分
+    var nodeUpdate = container.selectAll(".node")
+                        .data(nodes, function(d){return d.id; });//这里必须是一个id
+    //获取节点的enter部分
+    var nodeEnter = nodeUpdate.enter();
+
+    //获取节点的exit部分
+    var nodeExit = nodeUpdate.exit();
+    //1. 节点的 Enter 部分的处理办法
+    var enterNodes = nodeEnter.append("g")
+                    .attr("class","node")
+                    .attr("id",function(d,i) {return "node-"+d.id})
+                    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
+    enterNodes.append("circle")
+      .attr("r", 0)
+      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
+      .on("click", function(d) { toggle(d); redraw(d); });
+    var pathG = enterNodes.append("g")
+    	.attr("id", function(d,i) {return "pathG-"+d.id});
+    pathG.append("path")
+ 		.attr("x", function(d) { return d.children || d._children ? -14 : 14; })
+ 		.attr("id", function(d,i) {return "path-"+d.id})
+ 		.attr("class","pathBg")
+ 		.attr("stroke","rgb(254, 219, 0)")
+ 		.style("fill","rgb(254, 219, 0)")
+ 		.style("display","none");
+    enterNodes.append("text")
+        .attr("x", function(d) { return d.children || d._children ? -14 : 14; })
+        .attr("dy", ".35em")
+        .attr("id", function(d,i) {return "text-"+d.id})
+        .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+        .on("click",function(d,i) {
+        	d3.selectAll(".pathBg").each(function() {this.style.display='none';}); 
+        	document.getElementById("path-"+d.id+"").style.display='block';
+        })
+        .on("dblclick",function(d,i) {setVal(d,i);})
+        .on("mousedown",function(d,i) {rightMenu(d,i);})
+        .text(function(d) {return d.name; })
+        .style("fill-opacity", 0);
+    //2. 节点的 Update 部分的处理办法
+    var updateNodes = nodeUpdate.transition()
+                        .duration(500)
+                        .attr("transform", function(d) {return "translate(" + d.y + "," + d.x + ")"; });
+
+    updateNodes.select("circle")
+      .attr("r", 8)
+      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+    updateNodes.select("text")
+      .attr("x", function(d) { return d.children ? -14 : 14; })//在更新操作的时候需要重新进行判断
+      .attr("text-anchor", function(d) { return d.children? "end" : "start"; })//在更新操作的时候需要重新进行判断
+      .style("fill-opacity", 1);
+
+    //3. 节点的 Exit 部分的处理办法
+    var exitNodes = nodeExit.transition()
+                      .duration(500)
+                      .attr("transform", function(d) {return "translate(" + source.y + "," + source.x + ")"; })
+                      .remove();
+
+    exitNodes.select("circle")
+      .attr("r", 0);
+
+    exitNodes.select("text")
+      .style("fill-opacity", 0);
+
+    /*
+    （3） 连线的处理
+    */
+
+    //获取连线的update部分
+    var linkUpdate = container.selectAll(".link")
+                        .data(links, function(d){ return d.target.id; });//这里必须是一个id
+
+    //获取连线的enter部分
+    var linkEnter = linkUpdate.enter();
+
+    //获取连线的exit部分
+    var linkExit = linkUpdate.exit();
+
+    //1. 连线的 Enter 部分的处理办法
+    linkEnter.insert("path",".node")
+          .attr("class", "link")
+          .attr("d", function(d) {
+              var o = {x: source.x0, y: source.y0};
+              return diagonal({source: o, target: o});
+          })
+          .transition()
+          .duration(500)
+          .attr("d", diagonal);
+
+    //2. 连线的 Update 部分的处理办法
+    linkUpdate.transition()
+        .duration(500)
+        .attr("d", diagonal);
+
+    //3. 连线的 Exit 部分的处理办法
+    linkExit.transition()
+          .duration(500)
+          .attr("d", function(d) {
+            var o = {x: source.x, y: source.y};
+            return diagonal({source: o, target: o});
+          })
+          .remove();
+    /*
+    （4） 将当前的节点坐标保存在变量x0、y0里，以备更新时使用
+    */
+    nodes.forEach(function(d) {
+      d.x0 = d.x;
+      d.y0 = d.y;
+    });
+     //计算背景的宽度
+  	calHeight();
+  }
+    //增加节点
+  function addNode() { 
+  	var newNode = {
+  		id: id++,
+  		name: '新增节点',
+  		children:null
+  	};
+  	if(!currentNode.children && !currentNode._children) {
+  		currentNode.children =[]; //没有子节点
+  	}
+    if(currentNode._children) {
+      currentNode.children =  currentNode._children//收缩状态，添加并打开该节点
+    }
+    currentNode.children.push(newNode); //打开状态
+  	var rootNode = currentNode;
+	while(rootNode.parent){
+		rootNode = rootNode.parent;
+	}
+  redraw(rootNode);
+  }
+  //删除节点
+  function delNode() {
+  	//删除节点的子节点
+  	if(currentNode.children) {
+  		currentNode.children = null;
+  	}
+  	var currentNodeId = currentNode.id;
+  	var currentNodeParent =  currentNode.parent;
+  	if(currentNodeParent) { //如果节点有父节点,删除节点本身
+  		for(var i=0;i<currentNodeParent.children.length;i++){
+			if(currentNodeParent.children[i].id == currentNodeId){
+				currentNodeParent.children.splice(i,1);
+			}
+		}
+  	}else{
+  		currentNode = null;
+  		$("#svgBox").first("g").children().remove();
+  	}
+  	var rootNode = currentNode;
+  	if(rootNode ){
+  		while(rootNode.parent){
+  			rootNode = rootNode.parent;
+  		}
+  		redraw(rootNode);
+	 }
+  }
+  function calHeight() {
+  		//用函数来运行，不然在点击的时候会执行点击外面的程序，不知道为啥。。
+      d3.selectAll("text").each(function(d,i) {
+      	//给每个背景的g元素设置好对应位置,如果有子节点它的偏移量为文本宽度+小球宽度
+      	var translateX= d.children? 'translate('+(-Math.round(this.getBBox().width+8))+',2)' : 'translate(18,2)'
+      	document.getElementById("pathG-"+d.id+"").setAttribute("transform",translateX)
+    	//给每个背景设置相应的宽度
+    	document.getElementById("path-"+d.id+"").setAttribute("d","M-5,-11h"+Math.round(this.getBBox().width)+"a5,5,0,0,1,5,5v8a5,5,0,0,1,-5,5h-"+Math.round(this.getBBox().width)+"a5,5,0,0,1,-5,-5v-8a5,5,0,0,1,5,-5z")
+    }) 
+  }
+  function openNode(node) {  //让页面在开始的时候只显示前三个节点
+    node.forEach(function(d) {
+       if(d.element == 3) {
+         if(d.children){ //如果有子节点
+            d._children = d.children; //将该子节点保存到 _children
+            d.children = null;  //将子节点设置为null
+          }else{  //如果没有子节点
+            d.children = d._children; //从 _children 取回原来的子节点 
+            d._children = null; //将 _children 设置为 null
+          }
+          isOpen = true
+      }
+    })
+    redraw(node)
+  }
+  //切换开关，d 为被点击的节点
+  function toggle(d){
+    if(d.children){ //如果有子节点
+      d._children = d.children; //将该子节点保存到 _children
+      d.children = null;  //将子节点设置为null
+    }else{  //如果没有子节点
+      d.children = d._children; //从 _children 取回原来的子节点 
+      d._children = null; //将 _children 设置为 null
+    }
+  }
+	function rightMenu(d,i) { // 操作菜单
+		if(d3.event.button == 2) { //鼠标右键事件
+			//得到文本的位置坐标
+			d3.selectAll(".pathBg").each(function() {
+				this.style.display = 'none'
+			})
+			document.getElementById("path-"+d.id+"").style.display = 'block'
+      //得到文本的位置坐标
+      var zuobiao;
+      if (!!window.ActiveXObject || "ActiveXObject" in window){
+          //解决IE下得到的值中间没有 逗号
+          zuobiao = (document.getElementById("node-"+d.id).getAttribute("transform").replace(" ",",")).replace(/[^0-9\.\,]/g,'')
+      }else{
+        zuobiao = document.getElementById("node-"+d.id).getAttribute("transform").replace(/[^0-9\.\,]/g,'')
+      }
+			//有子元素的坐标等于transition的偏移量-文本的宽度	
+			var newX = parseInt(zuobiao.substring(0,zuobiao.indexOf(",")))+28-Math.round(document.getElementById("text-"+d.id+"").getBBox().width)
+			var x =d.children ?newX:parseInt(zuobiao.substring(0,zuobiao.indexOf(",")))+58
+			var y =parseInt(zuobiao.substring(zuobiao.indexOf(",")+1))-32
+			$("#right-menu").css({left:x,top:y})
+			$("#right-menu").fadeIn()
+			currentNode = d
+		}
+	}		
+	function setVal(d,i) {
+		$("#receiver").addClass("input")
+		$("#receiver").text("")
+		$("#receiver").text(d.name)
+		oldVal = $("#receiver").text()
+		var text =document.getElementById("receiver")
+		if (document.body.createTextRange) { //让双击的时候选中该文本框里面的内容
+            var range = document.body.createTextRange();
+            range.moveToElementText(text);
+            range.select();
+        } else if(window.getSelection) {
+            var selection = window.getSelection();
+            var range = document.createRange();
+            range.selectNodeContents(text);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+		//得到文本的位置坐标
+		var zuobiao;
+    if (!!window.ActiveXObject || "ActiveXObject" in window){
+        //解决IE下得到的值中间没有 逗号
+        zuobiao = (document.getElementById("node-"+d.id).getAttribute("transform").replace(" ",",")).replace(/[^0-9\.\,]/g,'')
+    }else{
+      zuobiao = document.getElementById("node-"+d.id).getAttribute("transform").replace(/[^0-9\.\,]/g,'')
+    }
+		//有子元素的坐标等于transition的偏移量-文本的宽度	
+		var eleWidth = document.getElementById("text-"+d.id+"").getBBox().width;
+		var newX = parseInt(zuobiao.substring(0,zuobiao.indexOf(",")))+75-Math.round(eleWidth);
+		var x =d.children?newX:parseInt(zuobiao.substring(0,zuobiao.indexOf(",")))+101;
+		var y =parseInt(zuobiao.substring(zuobiao.indexOf(",")+1))+26
+		$("#receiver").css({left:x,top:y,"min-width":eleWidth})
+		//540 480  //620 500  等于它的父容器g的transition里面的x轴+80(最外层的g的transition) ,y轴+20
+		currentNode = d
+		//var target =document.getElementById("text-"+d.id)
+		//document.getElementById("text-"+d.id).setAttribute("index",true); //给它设置唯一标志位，不然在进行操作的时候会出现很多个元素同时操作了
+	};
+	//输入框失去焦点的时候
+	$("#receiver").blur(function() {
+			if($("#receiver").text() == '') {
+				alert("不能为空")
+				return
+			}
+			$("#receiver").removeClass("input")
+			document.getElementById("path-"+currentNode.id+"").style.display='none';
+			if(oldVal == $("#receiver").text()) { //判断有没有进行值修改操作
+				return
+			}
+			var text = $("#receiver").text()
+			document.getElementById("text-"+currentNode.id).innerHTML =text //进行页面的数据修改
+		})
+$("body").click(function() {
+	if(document.getElementById("right-menu").style.display == 'block') {
+		document.getElementById("right-menu").style.display ='none'
+	}
+})
+</script>
